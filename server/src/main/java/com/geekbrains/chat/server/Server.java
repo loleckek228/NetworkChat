@@ -3,12 +3,15 @@ package com.geekbrains.chat.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Server {
     private AuthManager authManager;
     private List<ClientHandler> clients;
+    private final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     public AuthManager getAuthManager() {
         return authManager;
@@ -29,10 +32,24 @@ public class Server {
         }
     }
 
-    public void broadcastMsg(String msg) {
+    public void broadcastMsg(String msg, boolean isDateTime) {
+        if (isDateTime) {
+        msg = String.format("[%s] %s", LocalDateTime.now().format(DTF), msg);
+        }
+
         for (ClientHandler o : clients) {
             o.sendMsg(msg);
         }
+    }
+
+    public void broadcastClientsList() {
+        StringBuilder stringBuilder = new StringBuilder("/clients_list ");
+        for (ClientHandler o : clients) {
+            stringBuilder.append(o.getNickname()).append(" ");
+        }
+        stringBuilder.setLength(stringBuilder.length() - 1);
+        String out = stringBuilder.toString();
+        broadcastMsg(out, false);
     }
 
     public boolean isNickBusy(String nickname) {
@@ -45,6 +62,10 @@ public class Server {
     }
 
     public void sendPrivateMsg(ClientHandler sender, String recipient, String msg) {
+        if (sender.getNickname().equals(recipient)) {
+            sender.sendMsg("Нельзя отправить сообщение самому себе");
+            return;
+        }
         for (ClientHandler o : clients) {
             if (recipient.equals(o.getNickname())) {
                 o.sendMsg("from " + sender.getNickname() + ": " + msg);
@@ -52,16 +73,18 @@ public class Server {
                 return;
             }
         }
-        sender.sendMsg(recipient + " не в сети");
+        sender.sendMsg(recipient + " не в сети, либо такого пользователя не существует");
     }
 
     public synchronized void subscribe(ClientHandler clientHandler) {
-        broadcastMsg(clientHandler.getNickname() + " в сети");
+        broadcastMsg(clientHandler.getNickname() + " в сети", false);
         clients.add(clientHandler);
+        broadcastClientsList();
     }
 
     public synchronized void unsubscribe(ClientHandler clientHandler) {
         clients.remove(clientHandler);
-        broadcastMsg(clientHandler.getNickname() + " не сети");
+        broadcastMsg(clientHandler.getNickname() + " не сети", false);
+        broadcastClientsList();
     }
 }

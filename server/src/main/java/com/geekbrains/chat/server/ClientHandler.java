@@ -35,8 +35,8 @@ public class ClientHandler {
                                 continue;
                             }
                             nickname = nickFromAuthManager;
-                            server.subscribe(this);
                             sendMsg("/authok " + nickname);
+                            server.subscribe(this);
                             break;
                         } else {
                             sendMsg("Указан неверный логин/пароль");
@@ -48,15 +48,25 @@ public class ClientHandler {
                     System.out.print("Сообщение от клиента: " + msg + "\n");
                     if (msg.startsWith("/")) {
                         if (msg.startsWith("/w ")) {
-                            String[] privateMsg = msg.split(" ", 3);
-                            server.sendPrivateMsg(this, privateMsg[1], privateMsg[2]);
+                            String[] tokens = msg.split(" ", 3);
+                            server.sendPrivateMsg(this, tokens[1], tokens[2]);
+                            continue;
+                        }
+                        if (msg.startsWith("/change_nick ")) {
+                            String[] tokens = msg.split(" ");
+                            nickname = tokens[1];
+                            sendMsg("/change_nick_confirm " + nickname);
+                            sendMsg("Вы теперь в сети как: " + nickname);
+                            server.broadcastClientsList();
+                            continue;
                         }
                         if (msg.equals("/end")) {
                             sendMsg("/end_confirm");
                             break;
                         }
+
                     } else {
-                        server.broadcastMsg(nickname + ": " + msg);
+                        server.broadcastMsg(nickname + ": " + msg, true);
                     }
                 }
             } catch (IOException e) {

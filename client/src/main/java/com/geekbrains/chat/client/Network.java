@@ -24,6 +24,13 @@ public class Network {
         return in.readUTF();
     }
 
+    public boolean isConnected() {
+        if (socket == null || socket.isClosed()) {
+            return false;
+        }
+        return true;
+    }
+
     public void close() {
         try {
             if (in != null) {
