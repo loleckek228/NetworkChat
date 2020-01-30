@@ -2,7 +2,15 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Button?>
 <VBox fx:controller="com.geekbrains.chat.client.Controller" xmlns:fx="http://javafx.com/fxml" alignment="center">
+    <HBox fx:id="loginBox">
+        <TextField fx:id="loginField" HBox.hgrow="ALWAYS" />
+        <PasswordField fx:id="passField" HBox.hgrow="ALWAYS" />
+        <Button HBox.hgrow="ALWAYS" text="Войти" onAction="#tryToAuth"/>
+    </HBox>
     <TextArea fx:id="textArea" VBox.vgrow="ALWAYS" editable="false"/>
     <TextField fx:id="msgField" onAction="#sendMsg"/>
 </VBox>

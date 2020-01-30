@@ -11,21 +11,20 @@ public class Network {
     private DataOutputStream out;
 
     public Network(int port) throws IOException {
-        socket = new Socket("localhost", 8189);
+        socket = new Socket("localhost", port);
         in = new DataInputStream(socket.getInputStream());
         out = new DataOutputStream(socket.getOutputStream());
-    }
-
-    public String readMsg() throws IOException {
-        return in.readUTF();
     }
 
     public void sendMsg(String msg) throws IOException {
         out.writeUTF(msg);
     }
 
-    public void close() {
+    public String readMsg() throws IOException {
+        return in.readUTF();
+    }
 
+    public void close() {
         try {
             if (in != null) {
                 in.close();
@@ -33,7 +32,6 @@ public class Network {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         try {
             if (out != null) {
                 out.close();
@@ -41,7 +39,6 @@ public class Network {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         try {
             if (socket != null) {
                 socket.close();
