@@ -94,6 +94,7 @@ public class Controller implements Initializable {
                             }
                             if (msg.startsWith("/change_nick_confirm")) {
                                 nickname = msg.split(" ")[1];
+                                continue;
                             }
                         } else {
                             textArea.appendText(msg + "\n");

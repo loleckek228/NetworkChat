@@ -54,6 +54,7 @@ public class ClientHandler {
                         }
                         if (msg.startsWith("/change_nick ")) {
                             String[] tokens = msg.split(" ");
+                            server.getAuthManager().changeNicname(nickname, tokens[1]);
                             nickname = tokens[1];
                             sendMsg("/change_nick_confirm " + nickname);
                             sendMsg("Вы теперь в сети как: " + nickname);

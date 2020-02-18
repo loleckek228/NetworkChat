@@ -19,9 +19,10 @@ public class Server {
 
     public Server(int port) {
         clients = new ArrayList<>();
-        authManager = new BasicAuthManager();
+        authManager = new DBAuthManager();
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Сервер запущен. Ожидаем подключения клиентов...");
+            authManager.connect();
             while (true) {
                 Socket socket = serverSocket.accept();
                 System.out.println("Клиент подключился");
@@ -30,9 +31,13 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        finally {
+            authManager.disconnect();
+        }
     }
 
     public void broadcastMsg(String msg, boolean isDateTime) {
+
         if (isDateTime) {
         msg = String.format("[%s] %s", LocalDateTime.now().format(DTF), msg);
         }
@@ -44,9 +49,11 @@ public class Server {
 
     public void broadcastClientsList() {
         StringBuilder stringBuilder = new StringBuilder("/clients_list ");
+
         for (ClientHandler o : clients) {
             stringBuilder.append(o.getNickname()).append(" ");
         }
+
         stringBuilder.setLength(stringBuilder.length() - 1);
         String out = stringBuilder.toString();
         broadcastMsg(out, false);
@@ -58,6 +65,7 @@ public class Server {
                 return true;
             }
         }
+
         return false;
     }
 
