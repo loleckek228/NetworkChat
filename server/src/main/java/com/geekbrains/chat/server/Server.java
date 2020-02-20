@@ -13,6 +13,12 @@ public class Server {
     private List<ClientHandler> clients;
     private final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
+    public ChatHistory getChatHistory() {
+        return chatHistory;
+    }
+
+    private ChatHistory chatHistory;
+
     public AuthManager getAuthManager() {
         return authManager;
     }
@@ -23,6 +29,7 @@ public class Server {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("Сервер запущен. Ожидаем подключения клиентов...");
             authManager.connect();
+            chatHistory = new ChatHistory();
             while (true) {
                 Socket socket = serverSocket.accept();
                 System.out.println("Клиент подключился");
@@ -30,24 +37,25 @@ public class Server {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             authManager.disconnect();
         }
     }
 
-    public void broadcastMsg(String msg, boolean isDateTime) {
+    public void broadcastMsg(String msg, boolean isDateTime) throws IOException {
 
         if (isDateTime) {
-        msg = String.format("[%s] %s", LocalDateTime.now().format(DTF), msg);
+            msg = String.format("[%s] %s", LocalDateTime.now().format(DTF), msg);
+            chatHistory.safe(msg);
         }
+
 
         for (ClientHandler o : clients) {
             o.sendMsg(msg);
         }
     }
 
-    public void broadcastClientsList() {
+    public void broadcastClientsList() throws IOException {
         StringBuilder stringBuilder = new StringBuilder("/clients_list ");
 
         for (ClientHandler o : clients) {
@@ -84,15 +92,15 @@ public class Server {
         sender.sendMsg(recipient + " не в сети, либо такого пользователя не существует");
     }
 
-    public synchronized void subscribe(ClientHandler clientHandler) {
+    public synchronized void subscribe(ClientHandler clientHandler) throws IOException {
         broadcastMsg(clientHandler.getNickname() + " в сети", false);
         clients.add(clientHandler);
         broadcastClientsList();
     }
 
-    public synchronized void unsubscribe(ClientHandler clientHandler) {
-        clients.remove(clientHandler);
+    public synchronized void unsubscribe(ClientHandler clientHandler) throws IOException {
         broadcastMsg(clientHandler.getNickname() + " не сети", false);
+        clients.remove(clientHandler);
         broadcastClientsList();
     }
 }

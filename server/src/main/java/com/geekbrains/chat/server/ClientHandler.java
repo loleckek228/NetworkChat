@@ -2,6 +2,7 @@ package com.geekbrains.chat.server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -37,12 +38,14 @@ public class ClientHandler {
                             nickname = nickFromAuthManager;
                             sendMsg("/authok " + nickname);
                             server.subscribe(this);
+                            sendMsg(server.getChatHistory().showHistory());
                             break;
                         } else {
                             sendMsg("Указан неверный логин/пароль");
                         }
                     }
                 }
+
                 while (true) {
                     String msg = in.readUTF();
                     System.out.print("Сообщение от клиента: " + msg + "\n");
@@ -73,7 +76,11 @@ public class ClientHandler {
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
-                close();
+                try {
+                    close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }).start();
     }
@@ -86,7 +93,7 @@ public class ClientHandler {
         }
     }
 
-    public void close() {
+    public void close() throws IOException {
         server.unsubscribe(this);
         nickname = null;
         if (in != null) {

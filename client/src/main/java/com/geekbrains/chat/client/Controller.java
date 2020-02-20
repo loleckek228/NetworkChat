@@ -7,7 +7,7 @@ import javafx.scene.control.*;
 
 import javafx.scene.layout.HBox;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 
 import java.util.ResourceBundle;
@@ -32,6 +32,7 @@ public class Controller implements Initializable {
     private Network network;
     private boolean authenticated;
     private String nickname;
+    private ClientHistory clientHistory;
 
     public void setAuthenticated(boolean authenticated) {
         this.authenticated = authenticated;
@@ -70,12 +71,18 @@ public class Controller implements Initializable {
                             nickname = msg.split(" ")[1];
                             textArea.appendText("Вы зашли в чат под ником: " + nickname + "\n");
                             setAuthenticated(true);
+//                            clientHistory.showHistory();
                             break;
                         }
                         textArea.appendText(msg + "\n");
                     }
+
+                    clientHistory = new ClientHistory("history_" + nickname + ".txt");
+
                     while (true) {
                         String msg = network.readMsg();
+                        clientHistory.safe(msg);
+                        clientHistory.safe("\n");
                         if (msg.startsWith("/")) {
                             if (msg.equals("/end_confirm")) {
                                 textArea.appendText("Завершено общение с сервером\n");
@@ -98,6 +105,7 @@ public class Controller implements Initializable {
                             }
                         } else {
                             textArea.appendText(msg + "\n");
+
                         }
                     }
                 } catch (IOException e) {
