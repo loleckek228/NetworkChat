@@ -71,7 +71,6 @@ public class Controller implements Initializable {
                             nickname = msg.split(" ")[1];
                             textArea.appendText("Вы зашли в чат под ником: " + nickname + "\n");
                             setAuthenticated(true);
-//                            clientHistory.showHistory();
                             break;
                         }
                         textArea.appendText(msg + "\n");

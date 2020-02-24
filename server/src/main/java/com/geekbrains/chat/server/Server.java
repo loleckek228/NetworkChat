@@ -49,7 +49,6 @@ public class Server {
             chatHistory.safe(msg);
         }
 
-
         for (ClientHandler o : clients) {
             o.sendMsg(msg);
         }

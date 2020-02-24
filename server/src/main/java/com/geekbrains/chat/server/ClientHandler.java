@@ -2,9 +2,10 @@ package com.geekbrains.chat.server;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ClientHandler {
     private Server server;
@@ -22,7 +23,8 @@ public class ClientHandler {
         this.socket = socket;
         this.in = new DataInputStream(socket.getInputStream());
         this.out = new DataOutputStream(socket.getOutputStream());
-        new Thread(() -> {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(() -> {
             try {
                 while (true) {
                     String msg = in.readUTF();
@@ -82,7 +84,8 @@ public class ClientHandler {
                     e.printStackTrace();
                 }
             }
-        }).start();
+        });
+        executorService.shutdown();
     }
 
     public void sendMsg(String msg) {
