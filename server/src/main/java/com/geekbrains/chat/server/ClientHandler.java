@@ -1,5 +1,6 @@
 package com.geekbrains.chat.server;
 
+import org.apache.logging.log4j.Level;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -28,8 +29,8 @@ public class ClientHandler {
             try {
                 while (true) {
                     String msg = in.readUTF();
-                    System.out.print("Сообщение от клиента: " + msg + "\n");
                     if (msg.startsWith("/auth ")) {
+                        server.getLOGGER().info("Авторизация клиента: "+ msg);
                         String[] tokens = msg.split(" ", 3);
                         String nickFromAuthManager = server.getAuthManager().getNicknameByLoginAndPassword(tokens[1], tokens[2]);
                         if (nickFromAuthManager != null) {
@@ -50,8 +51,8 @@ public class ClientHandler {
 
                 while (true) {
                     String msg = in.readUTF();
-                    System.out.print("Сообщение от клиента: " + msg + "\n");
                     if (msg.startsWith("/")) {
+                        server.getLOGGER().info("Команда от клиента " + nickname + ": " + msg);
                         if (msg.startsWith("/w ")) {
                             String[] tokens = msg.split(" ", 3);
                             server.sendPrivateMsg(this, tokens[1], tokens[2]);
@@ -72,19 +73,21 @@ public class ClientHandler {
                         }
 
                     } else {
+                        server.getLOGGER().info("Сообщение от клиента "  + nickname + ": " + msg);
                         server.broadcastMsg(nickname + ": " + msg, true);
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                server.getLOGGER().error(Level.ERROR, e);
             } finally {
                 try {
                     close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    server.getLOGGER().error(Level.ERROR, e);
                 }
             }
         });
+
         executorService.shutdown();
     }
 
@@ -92,32 +95,35 @@ public class ClientHandler {
         try {
             out.writeUTF(msg);
         } catch (IOException e) {
-            e.printStackTrace();
+            server.getLOGGER().error(Level.ERROR, e);
         }
     }
 
     public void close() throws IOException {
         server.unsubscribe(this);
         nickname = null;
+
         if (in != null) {
             try {
                 in.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                server.getLOGGER().error(Level.ERROR, e);
             }
         }
+
         if (out != null) {
             try {
                 out.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                server.getLOGGER().error(Level.ERROR, e);
             }
         }
+
         if (socket != null) {
             try {
                 socket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                server.getLOGGER().error(Level.ERROR, e);
             }
         }
     }

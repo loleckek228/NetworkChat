@@ -1,5 +1,9 @@
 package com.geekbrains.chat.server;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -9,9 +13,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Server {
+    private static final Logger LOGGER = LogManager.getLogger(Server.class);
     private AuthManager authManager;
     private List<ClientHandler> clients;
     private final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
+    public Logger getLOGGER() {
+        return LOGGER;
+    }
 
     public ChatHistory getChatHistory() {
         return chatHistory;
@@ -27,16 +36,16 @@ public class Server {
         clients = new ArrayList<>();
         authManager = new DBAuthManager();
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-            System.out.println("Сервер запущен. Ожидаем подключения клиентов...");
+            LOGGER.info("Сервер запущен. Ожидаем подключения клиентов...");
             authManager.connect();
             chatHistory = new ChatHistory();
             while (true) {
                 Socket socket = serverSocket.accept();
-                System.out.println("Клиент подключился");
+                LOGGER.info("Клиент подключился");
                 new ClientHandler(this, socket);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.throwing(Level.ERROR, e);
         } finally {
             authManager.disconnect();
         }
